@@ -1,3 +1,4 @@
+package DisneyShortcuts;
 
 public class GuiApp {
 
