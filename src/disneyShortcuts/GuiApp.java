@@ -185,7 +185,7 @@ public class GuiApp extends JFrame {
 
 		for (Ride r : rides) {
 			String ride = "Ride: " + r.getName() + " ID: " + r.getRideID();
-			destinationComboBox.addItem(ride);
+			startComboBox.addItem(ride);
 		}
 	}
 
