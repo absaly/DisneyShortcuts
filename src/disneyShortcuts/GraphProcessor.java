@@ -1,8 +1,8 @@
 package disneyShortcuts;
 
+import edu.princeton.cs.algs4.BreadthFirstPaths;
 import edu.princeton.cs.algs4.Graph;
 import edu.princeton.cs.algs4.In;
-import edu.princeton.cs.algs4.BreadthFirstPaths;
 
 /**
  * Contains Graph Logic. Reads in a graph from a CSV file.
