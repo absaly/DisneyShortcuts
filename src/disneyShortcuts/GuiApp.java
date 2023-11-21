@@ -1,10 +1,12 @@
 package disneyShortcuts;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -28,6 +30,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 /**
@@ -100,16 +103,26 @@ public class GuiApp extends JFrame {
 		
 		// Listens to mouse clicks
 		addMouseListener(new MouseAdapter() {
+			int x1, x2, y1, y2;
+			
 			@Override
 			public void mousePressed(MouseEvent e) {
-				int x1 = e.getX();
-				int y1 = e.getY();
-				System.out.println("X: " + x1 + " Y: " + y1);
-				
-				// testing out drawing but not working
-//				Graphics g = mainContent.getGraphics();
-//				g.drawLine(x1, y1, x2, y2);
-				
+				if (x1 == 0 && y1 == 0) {
+					Point p = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), mainContent);
+					x1 = p.x;
+					y1 = p.y;
+					System.out.println("X: " + x1 + " Y: " + y1);
+				} else {
+					Point p = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), mainContent);
+					x2 = p.x;
+					y2 = p.y;
+					Graphics g = mainContent.getGraphics();
+					Graphics2D g2d = (Graphics2D) g;
+					g2d.setStroke(new BasicStroke(3));
+					g2d.setColor(Color.RED);
+					g2d.drawLine(x1, y1, x2, y2);
+					x1 = x2 = y1 = y2 = 0;
+				}
 			}
 		});
 	}
@@ -122,8 +135,21 @@ public class GuiApp extends JFrame {
 	 * @param directionsTextArea    the text where directions will populate once
 	 *                              submit is clicked.
 	 * @param gl_mainContent        the other content for the page.
-	 */
+	 */	
 	private void formatContent(JLabel disneyBackgroundImage, JTextArea directionsTextArea, GroupLayout gl_mainContent) {
+	    setupHorizontalGroup(gl_mainContent, disneyBackgroundImage, directionsTextArea);
+	    setupVerticalGroup(gl_mainContent, disneyBackgroundImage, directionsTextArea);
+	    mainContent.setLayout(gl_mainContent);
+	}
+
+	/**
+	 * Configures settings for the horizontal group in the group layout. 
+	 * 
+	 * @param gl_mainContent
+	 * @param disneyBackgroundImage
+	 * @param directionsTextArea
+	 */
+	private void setupHorizontalGroup(GroupLayout gl_mainContent, JLabel disneyBackgroundImage, JTextArea directionsTextArea) {
 		gl_mainContent.setHorizontalGroup(gl_mainContent.createParallelGroup(Alignment.TRAILING).addGroup(gl_mainContent
 				.createSequentialGroup().addContainerGap()
 				.addGroup(gl_mainContent.createParallelGroup(Alignment.LEADING).addGroup(gl_mainContent
@@ -145,6 +171,16 @@ public class GuiApp extends JFrame {
 								Short.MAX_VALUE)
 						.addComponent(disclaimerTextField, 1200, 1200, 1200))
 				.addContainerGap(12, Short.MAX_VALUE)));
+	}
+
+	/**
+	 * Configures settings for the vertical group in the group layout. 
+	 * 
+	 * @param gl_mainContent
+	 * @param disneyBackgroundImage
+	 * @param directionsTextArea
+	 */
+	private void setupVerticalGroup(GroupLayout gl_mainContent, JLabel disneyBackgroundImage, JTextArea directionsTextArea) {
 		gl_mainContent.setVerticalGroup(gl_mainContent.createParallelGroup(Alignment.LEADING).addGroup(gl_mainContent
 				.createSequentialGroup().addComponent(disneyBackgroundImage).addPreferredGap(ComponentPlacement.RELATED)
 				.addGroup(gl_mainContent.createParallelGroup(Alignment.LEADING)
@@ -165,7 +201,6 @@ public class GuiApp extends JFrame {
 												GroupLayout.PREFERRED_SIZE))))
 				.addPreferredGap(ComponentPlacement.RELATED).addComponent(disclaimerTextField,
 						GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)));
-		mainContent.setLayout(gl_mainContent);
 	}
 
 	/**
@@ -298,7 +333,6 @@ public class GuiApp extends JFrame {
 	 * Sets the close operation, boundaries, title, icon, and creates a new JPanel.
 	 */
 	private void setUp() {
-		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1248, 900);
 		setTitle("Disney Shortcuts (Not-Affiliated)");
