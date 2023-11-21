@@ -1,12 +1,15 @@
 package disneyShortcuts;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -82,6 +85,8 @@ public class GuiApp extends JFrame {
 		createStartComboBox();
 
 		createDestinationComboBox();
+		
+		
 
 		GroupLayout gl_mainContent = new GroupLayout(mainContent);
 		formatContent(disneyBackgroundImage, directionsTextArea, gl_mainContent);
@@ -90,6 +95,21 @@ public class GuiApp extends JFrame {
 		submitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// TODO button action
+			}
+		});
+		
+		// Listens to mouse clicks
+		addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				int x1 = e.getX();
+				int y1 = e.getY();
+				System.out.println("X: " + x1 + " Y: " + y1);
+				
+				// testing out drawing but not working
+//				Graphics g = mainContent.getGraphics();
+//				g.drawLine(x1, y1, x2, y2);
+				
 			}
 		});
 	}
@@ -146,17 +166,6 @@ public class GuiApp extends JFrame {
 				.addPreferredGap(ComponentPlacement.RELATED).addComponent(disclaimerTextField,
 						GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)));
 		mainContent.setLayout(gl_mainContent);
-	}
-
-	private void createPanel() {
-		panel = new JPanel();
-		panel.setPreferredSize(new Dimension(1248, 900));
-		panel.setOpaque(false);
-
-//		public void paint(Graphics g) {
-//			Graphics2D g2d = (Graphics2D) g;
-//			g2d.draw(new Line2D.Double(100, 100, 200, 200));
-//		}
 	}
 
 	/**
@@ -298,5 +307,6 @@ public class GuiApp extends JFrame {
 		mainContent = new JPanel();
 		mainContent.setBackground(Color.WHITE);
 		mainContent.setBorder(new EmptyBorder(5, 5, 5, 5));
+		mainContent.add(new DrawPanel());
 	}
 }
