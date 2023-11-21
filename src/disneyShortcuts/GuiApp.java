@@ -341,6 +341,5 @@ public class GuiApp extends JFrame {
 		mainContent = new JPanel();
 		mainContent.setBackground(Color.WHITE);
 		mainContent.setBorder(new EmptyBorder(5, 5, 5, 5));
-		mainContent.add(new DrawPanel());
 	}
 }
