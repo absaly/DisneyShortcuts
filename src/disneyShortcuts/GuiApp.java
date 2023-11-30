@@ -17,7 +17,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
@@ -32,23 +31,30 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import java.awt.Component;
 
 /**
- * Contains GUI Logic. Reads in ride information from a CSV file.
+ * Creates and initializes GUI Components for Disney Shortcuts. 
+ * Uses eventlisteners to interact with the user. 
+ * Reads in ride information from a CSV file.
  * 
  * @author Noah Ewell + Abbas Al-Younis
  */
 public class GuiApp extends JFrame {
-
+	private static final long serialVersionUID = 6506778447729462611L;
+	
 	private JPanel mainContent;
 	private JTextField disclaimerTextField;
 	private JTextField txtStart;
 	private JTextField txtDestination;
-	private JComboBox destinationComboBox;
-	private JComboBox startComboBox;
+	private JComboBox<String> destinationComboBox;
+	private JComboBox<String> startComboBox;
 	private JButton submitButton;
-	private JPanel panel;
 	private Ride[] rides;
+	private JTextArea directionsTextArea;
+	private JLabel disneyBackgroundImage;
+	private JTextArea welcomeMessage;
+	private JTextField txtInstructions;
 
 	// TEST DRIVER
 	public static void main(String[] args) {
@@ -73,9 +79,9 @@ public class GuiApp extends JFrame {
 
 		setContentPane(mainContent);
 
-		JLabel disneyBackgroundImage = setBackgroundImage();
+		setBackgroundImage();
 
-		JTextArea directionsTextArea = createDirectionsTextBox();
+		createDirectionsTextBox();
 
 		createDisclaimerTextField();
 
@@ -89,10 +95,15 @@ public class GuiApp extends JFrame {
 
 		createDestinationComboBox();
 		
+		createWelcomeTextArea();
 		
-
+		createInstructionsTextField();
+		
 		GroupLayout gl_mainContent = new GroupLayout(mainContent);
-		formatContent(disneyBackgroundImage, directionsTextArea, gl_mainContent);
+		
+		configureGroupLayout(gl_mainContent);
+	    
+	    mainContent.setLayout(gl_mainContent);
 
 		// ============== CREATE EVENTS ================
 		submitButton.addActionListener(new ActionListener() {
@@ -128,92 +139,94 @@ public class GuiApp extends JFrame {
 	}
 
 	/**
-	 * Adds and formats the background images, text area, and other content to a
-	 * group layout style.
-	 * 
-	 * @param disneyBackgroundImage the background image for the park.
-	 * @param directionsTextArea    the text where directions will populate once
-	 *                              submit is clicked.
-	 * @param gl_mainContent        the other content for the page.
-	 */	
-	private void formatContent(JLabel disneyBackgroundImage, JTextArea directionsTextArea, GroupLayout gl_mainContent) {
-	    setupHorizontalGroup(gl_mainContent, disneyBackgroundImage, directionsTextArea);
-	    setupVerticalGroup(gl_mainContent, disneyBackgroundImage, directionsTextArea);
-	    mainContent.setLayout(gl_mainContent);
+	 * Creates the instructions banner.
+	 */
+	private void createInstructionsTextField() {
+		txtInstructions = new JTextField();
+		txtInstructions.setEditable(false);
+		txtInstructions.setFont(new Font("Copperplate Gothic Light", Font.PLAIN, 14));
+		txtInstructions.setText("Instructions");
+		txtInstructions.setHorizontalAlignment(SwingConstants.CENTER);
+		txtInstructions.setColumns(10);
 	}
 
 	/**
-	 * Configures settings for the horizontal group in the group layout. 
-	 * 
-	 * @param gl_mainContent
-	 * @param disneyBackgroundImage
-	 * @param directionsTextArea
+	 * Creates the welcome message.
 	 */
-	private void setupHorizontalGroup(GroupLayout gl_mainContent, JLabel disneyBackgroundImage, JTextArea directionsTextArea) {
-		gl_mainContent.setHorizontalGroup(gl_mainContent.createParallelGroup(Alignment.TRAILING).addGroup(gl_mainContent
-				.createSequentialGroup().addContainerGap()
-				.addGroup(gl_mainContent.createParallelGroup(Alignment.LEADING).addGroup(gl_mainContent
-						.createSequentialGroup()
-						.addComponent(directionsTextArea, GroupLayout.PREFERRED_SIZE, 431, GroupLayout.PREFERRED_SIZE)
-						.addGap(18)
-						.addGroup(gl_mainContent.createParallelGroup(Alignment.LEADING, false)
-								.addComponent(startComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-								.addComponent(txtStart, GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE))
-						.addPreferredGap(ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
-						.addGroup(gl_mainContent.createParallelGroup(Alignment.TRAILING)
-								.addComponent(txtDestination, GroupLayout.PREFERRED_SIZE, 273,
-										GroupLayout.PREFERRED_SIZE)
-								.addComponent(destinationComboBox, GroupLayout.PREFERRED_SIZE, 273,
-										GroupLayout.PREFERRED_SIZE))
-						.addGap(18)
-						.addComponent(submitButton, GroupLayout.PREFERRED_SIZE, 175, GroupLayout.PREFERRED_SIZE))
-						.addComponent(disneyBackgroundImage, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
-								Short.MAX_VALUE)
-						.addComponent(disclaimerTextField, 1200, 1200, 1200))
-				.addContainerGap(12, Short.MAX_VALUE)));
+	private void createWelcomeTextArea() {
+		welcomeMessage = new JTextArea();
+		welcomeMessage.setOpaque(false);
+		welcomeMessage.setWrapStyleWord(true);
+		welcomeMessage.setEditable(false);
+		welcomeMessage.setForeground(Color.BLUE);
+		welcomeMessage.setText("Welcome to... Disney Shortcuts!");
+		welcomeMessage.setLineWrap(true);
+		welcomeMessage.setFont(new Font("Copperplate Gothic Light", Font.BOLD | Font.ITALIC, 24));
 	}
 
 	/**
-	 * Configures settings for the vertical group in the group layout. 
+	 * Modifies positioning of various components in the group layout.
 	 * 
 	 * @param gl_mainContent
-	 * @param disneyBackgroundImage
-	 * @param directionsTextArea
 	 */
-	private void setupVerticalGroup(GroupLayout gl_mainContent, JLabel disneyBackgroundImage, JTextArea directionsTextArea) {
-		gl_mainContent.setVerticalGroup(gl_mainContent.createParallelGroup(Alignment.LEADING).addGroup(gl_mainContent
-				.createSequentialGroup().addComponent(disneyBackgroundImage).addPreferredGap(ComponentPlacement.RELATED)
-				.addGroup(gl_mainContent.createParallelGroup(Alignment.LEADING)
-						.addComponent(directionsTextArea, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 119,
-								GroupLayout.PREFERRED_SIZE)
-						.addComponent(submitButton, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 126, Short.MAX_VALUE)
-						.addGroup(gl_mainContent.createSequentialGroup()
-								.addGroup(gl_mainContent.createParallelGroup(Alignment.BASELINE)
-										.addComponent(txtStart, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-												GroupLayout.PREFERRED_SIZE)
-										.addComponent(txtDestination, GroupLayout.PREFERRED_SIZE, 21,
-												GroupLayout.PREFERRED_SIZE))
+	private void configureGroupLayout(GroupLayout gl_mainContent) {
+		gl_mainContent.setHorizontalGroup(
+				gl_mainContent.createParallelGroup(Alignment.LEADING)
+					.addGroup(gl_mainContent.createSequentialGroup()
+						.addGroup(gl_mainContent.createParallelGroup(Alignment.LEADING)
+							.addGroup(gl_mainContent.createSequentialGroup()
+								.addComponent(disneyBackgroundImage)
 								.addPreferredGap(ComponentPlacement.RELATED)
-								.addGroup(gl_mainContent.createParallelGroup(Alignment.BASELINE)
-										.addComponent(startComboBox, GroupLayout.PREFERRED_SIZE,
-												GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-										.addComponent(destinationComboBox, GroupLayout.PREFERRED_SIZE, 21,
-												GroupLayout.PREFERRED_SIZE))))
-				.addPreferredGap(ComponentPlacement.RELATED).addComponent(disclaimerTextField,
-						GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)));
+								.addGroup(gl_mainContent.createParallelGroup(Alignment.LEADING)
+									.addComponent(submitButton, GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+									.addComponent(destinationComboBox, 0, 262, Short.MAX_VALUE)
+									.addComponent(txtStart, GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+									.addComponent(directionsTextArea, GroupLayout.PREFERRED_SIZE, 262, GroupLayout.PREFERRED_SIZE)
+									.addComponent(welcomeMessage, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 262, GroupLayout.PREFERRED_SIZE)
+									.addComponent(txtInstructions, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+									.addComponent(startComboBox, Alignment.TRAILING, 0, 262, Short.MAX_VALUE)
+									.addComponent(txtDestination, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)))
+							.addComponent(disclaimerTextField, GroupLayout.DEFAULT_SIZE, 1166, Short.MAX_VALUE))
+						.addContainerGap())
+			);
+			gl_mainContent.setVerticalGroup(
+				gl_mainContent.createParallelGroup(Alignment.LEADING)
+					.addGroup(gl_mainContent.createSequentialGroup()
+						.addGroup(gl_mainContent.createParallelGroup(Alignment.LEADING)
+							.addComponent(disneyBackgroundImage, GroupLayout.PREFERRED_SIZE, 580, GroupLayout.PREFERRED_SIZE)
+							.addGroup(gl_mainContent.createSequentialGroup()
+								.addComponent(welcomeMessage, GroupLayout.PREFERRED_SIZE, 71, GroupLayout.PREFERRED_SIZE)
+								.addGap(1)
+								.addComponent(txtInstructions, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addComponent(directionsTextArea, GroupLayout.PREFERRED_SIZE, 141, GroupLayout.PREFERRED_SIZE)
+								.addGap(18)
+								.addComponent(txtStart, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addComponent(startComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addGap(18)
+								.addComponent(txtDestination, GroupLayout.PREFERRED_SIZE, 21, GroupLayout.PREFERRED_SIZE)
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addComponent(destinationComboBox, GroupLayout.PREFERRED_SIZE, 21, GroupLayout.PREFERRED_SIZE)
+								.addGap(18)
+								.addComponent(submitButton, GroupLayout.PREFERRED_SIZE, 37, GroupLayout.PREFERRED_SIZE)))
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(disclaimerTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+			);
 	}
 
 	/**
 	 * Creates the destination drop down menu.
 	 */
 	private void createDestinationComboBox() {
-		destinationComboBox = new JComboBox();
+		destinationComboBox = new JComboBox<String>();
 		destinationComboBox.setFont(new Font("Copperplate Gothic Light", Font.PLAIN, 11));
 
 		rides = getRides("src/disneyShortcuts/Resources/disneyRides.csv");
 
 		for (Ride r : rides) {
-			String ride = "Ride: " + r.getName() + " ID: " + r.getRideID();
+			String ride = r.getRideID() + " - " + r.getName();
 			destinationComboBox.addItem(ride);
 		}
 	}
@@ -222,13 +235,13 @@ public class GuiApp extends JFrame {
 	 * Creates the start drop down menu.
 	 */
 	private void createStartComboBox() {
-		startComboBox = new JComboBox();
+		startComboBox = new JComboBox<String>();
 		startComboBox.setFont(new Font("Copperplate Gothic Light", Font.PLAIN, 11));
 
 		rides = getRides("src/disneyShortcuts/Resources/disneyRides.csv");
 
 		for (Ride r : rides) {
-			String ride = "Ride: " + r.getName() + " ID: " + r.getRideID();
+			String ride = r.getRideID() + " - " + r.getName();
 			startComboBox.addItem(ride);
 		}
 	}
@@ -262,6 +275,7 @@ public class GuiApp extends JFrame {
 	 */
 	private void createDestinationTextBox() {
 		txtDestination = new JTextField();
+		txtDestination.setEditable(false);
 		txtDestination.setText("Destination");
 		txtDestination.setHorizontalAlignment(SwingConstants.CENTER);
 		txtDestination.setFont(new Font("Copperplate Gothic Light", Font.PLAIN, 13));
@@ -273,6 +287,7 @@ public class GuiApp extends JFrame {
 	 */
 	private void createStartTextBox() {
 		txtStart = new JTextField();
+		txtStart.setEditable(false);
 		txtStart.setText("Start");
 		txtStart.setFont(new Font("Copperplate Gothic Light", Font.BOLD, 13));
 		txtStart.setHorizontalAlignment(SwingConstants.CENTER);
@@ -284,8 +299,9 @@ public class GuiApp extends JFrame {
 	 */
 	private void createSubmitButton() {
 		submitButton = new JButton("Submit");
+		submitButton.setForeground(Color.WHITE);
 		submitButton.setBorder(null);
-		submitButton.setBackground(new Color(0, 255, 255));
+		submitButton.setBackground(Color.BLUE);
 		submitButton.setFont(new Font("Copperplate Gothic Light", Font.BOLD, 13));
 	}
 
@@ -294,11 +310,15 @@ public class GuiApp extends JFrame {
 	 */
 	private void createDisclaimerTextField() {
 		disclaimerTextField = new JTextField();
+		disclaimerTextField.setOpaque(false);
+		disclaimerTextField.setEditable(false);
+		disclaimerTextField.setForeground(Color.RED);
 		disclaimerTextField.setBorder(null);
 		disclaimerTextField.setHorizontalAlignment(SwingConstants.CENTER);
 		disclaimerTextField.setFont(new Font("Copperplate Gothic Light", Font.PLAIN, 12));
 		disclaimerTextField.setText(
-				"Disclaimer: We are in no way affiliated with Disney. The above image is not owned by us. This was created for fun and not for distribution.");
+				"Disclaimer: We are in no way affiliated with Disney. The above image is not owned by us. "
+				+ "This was created for fun and not for distribution.");
 		disclaimerTextField.setColumns(10);
 	}
 
@@ -308,11 +328,15 @@ public class GuiApp extends JFrame {
 	 * @return the text box for directions to go in.
 	 */
 	private JTextArea createDirectionsTextBox() {
-		JTextArea directionsTextArea = new JTextArea();
+		directionsTextArea = new JTextArea();
+		directionsTextArea.setOpaque(false);
+		directionsTextArea.setEditable(false);
+		directionsTextArea.setWrapStyleWord(true);
 		directionsTextArea.setLineWrap(true);
 		directionsTextArea.setFont(new Font("Copperplate Gothic Light", Font.PLAIN, 14));
 		directionsTextArea.setText(
-				"Please select the ride you're currently closest to and the ride you would like to go to and click submit.");
+				"Please select the ride you're currently closest to and the ride you would like to go to "
+				+ "and click submit.");
 		return directionsTextArea;
 	}
 
@@ -322,10 +346,10 @@ public class GuiApp extends JFrame {
 	 * @return the background image
 	 */
 	private JLabel setBackgroundImage() {
-		JLabel disneyBackgroundImage = new JLabel("");
+		disneyBackgroundImage = new JLabel("");
 		disneyBackgroundImage.setBorder(null);
 		disneyBackgroundImage.setIcon(
-				new ImageIcon(GuiApp.class.getResource("/disneyShortcuts/Resources/disneyland-park-map-01.jpg")));
+				new ImageIcon(GuiApp.class.getResource("/disneyShortcuts/Resources/disneyParkMap.jpg")));
 		return disneyBackgroundImage;
 	}
 
@@ -334,11 +358,13 @@ public class GuiApp extends JFrame {
 	 */
 	private void setUp() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 1248, 900);
+		setBounds(100, 100, 1200, 650);
+		setResizable(false);
 		setTitle("Disney Shortcuts (Not-Affiliated)");
 		setIconImage(Toolkit.getDefaultToolkit()
 				.getImage(GuiApp.class.getResource("/disneyShortcuts/Resources/disneyCastle.png")));
 		mainContent = new JPanel();
+		mainContent.setOpaque(false);
 		mainContent.setBackground(Color.WHITE);
 		mainContent.setBorder(new EmptyBorder(5, 5, 5, 5));
 	}
