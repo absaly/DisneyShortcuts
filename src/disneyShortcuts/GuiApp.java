@@ -32,6 +32,11 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
+import edu.princeton.cs.algs4.DijkstraUndirectedSP;
+import edu.princeton.cs.algs4.EdgeWeightedGraph;
+import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.RedBlackBST;
+
 /**
  * Creates and initializes GUI Components for Disney Shortcuts. 
  * Uses eventlisteners to interact with the user. 
@@ -49,7 +54,6 @@ public class GuiApp extends JFrame {
 	private JComboBox<String> destinationComboBox;
 	private JComboBox<String> startComboBox;
 	private JButton submitButton;
-	private Ride[] rides;
 	private JTextArea directionsTextArea;
 	private JLabel disneyBackgroundImage;
 	private JTextArea welcomeMessage;
@@ -57,10 +61,17 @@ public class GuiApp extends JFrame {
 
 	// TEST DRIVER
 	public static void main(String[] args) {
+		
+		// Create Symbol Table
+		Ride[] rides = getRides("src/disneyShortcuts/Resources/disneyRides.csv");
+		RedBlackBST<Integer, Ride> st = new RedBlackBST<>();
+		fillSymbolTable(st, rides);
+		
+		// Load GUI
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GuiApp frame = new GuiApp();
+					GuiApp frame = new GuiApp(st);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -72,7 +83,7 @@ public class GuiApp extends JFrame {
 	/**
 	 * Creates the frame, initializes components, and creates events.
 	 */
-	public GuiApp() {
+	public GuiApp(RedBlackBST<Integer, Ride> st) {
 		// =========== CREATE FRAME & INITIALIZE COMPONENTS ==========
 		setUp();
 
@@ -90,9 +101,9 @@ public class GuiApp extends JFrame {
 
 		createDestinationTextBox();
 
-		createStartComboBox();
+		createStartComboBox(st);
 
-		createDestinationComboBox();
+		createDestinationComboBox(st);
 		
 		createWelcomeTextArea();
 		
@@ -109,6 +120,14 @@ public class GuiApp extends JFrame {
 	    // When Submit is clicked
 		submitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				
+				// TODO destinationComboBox.(something)
+				// TODO startComboBox.(something)
+				
+				// get shortest path
+				DijkstraUndirectedSP path = createGraph();
+				
+				// update directions
 				directionsTextArea.setText("Directions Appear Here!");
 			}
 		});
@@ -270,15 +289,14 @@ public class GuiApp extends JFrame {
 
 	/**
 	 * Creates the destination drop down menu.
+	 * @param st 
 	 */
-	private void createDestinationComboBox() {
+	private void createDestinationComboBox(RedBlackBST<Integer, Ride> st) {
 		destinationComboBox = new JComboBox<String>();
 		destinationComboBox.setFont(new Font("Copperplate Gothic Light", Font.PLAIN, 11));
-
-		rides = getRides("src/disneyShortcuts/Resources/disneyRides.csv");
-
-		for (Ride r : rides) {
-			String ride = r.getRideID() + " - " + r.getName();
+		
+		for (Integer key : st.keys()) {
+			String ride = st.get(key).getRideID() + " - " + st.get(key).getName();
 			destinationComboBox.addItem(ride);
 		}
 	}
@@ -286,14 +304,12 @@ public class GuiApp extends JFrame {
 	/**
 	 * Creates the start drop down menu.
 	 */
-	private void createStartComboBox() {
+	private void createStartComboBox(RedBlackBST<Integer, Ride> st) {
 		startComboBox = new JComboBox<String>();
 		startComboBox.setFont(new Font("Copperplate Gothic Light", Font.PLAIN, 11));
 
-		rides = getRides("src/disneyShortcuts/Resources/disneyRides.csv");
-
-		for (Ride r : rides) {
-			String ride = r.getRideID() + " - " + r.getName();
+		for (Integer key : st.keys()) {
+			String ride = st.get(key).getRideID() + " - " + st.get(key).getName();
 			startComboBox.addItem(ride);
 		}
 	}
@@ -420,4 +436,36 @@ public class GuiApp extends JFrame {
 		}
 		return rideList.toArray(new Ride[rideList.size()]);
 	}
+	
+	/**
+	 * Fills the symbol table with Rides. Each ride gets a unique id from the range that
+	 * is chronologically chosen. Each rides ID on the symbol table should match it's ID
+	 * as a ride at Disneyland.
+	 * 
+	 * @param st symbol table
+	 * @param games an array of games
+	 */
+	private static void fillSymbolTable(RedBlackBST<Integer, Ride> st, Ride[] rides) {
+		int id = 0;
+		for (Ride r : rides) {
+			id++;
+			st.put(id, r);
+		}
+	}
+	
+	/**
+	 * Reads in an edgeweighted graph and computes the shortest path.
+	 * 
+	 * @return the shortest path between rides, considering weighted edges
+	 */
+	private static DijkstraUndirectedSP createGraph() {
+		String fileName = "src/disneyShortcuts/Resources/disneyGraph.txt";
+		In in = new In(fileName);
+		EdgeWeightedGraph graph = new EdgeWeightedGraph(in);
+		int s = 1; // TODO will need to be changed to coincide with whatever ride the user selects as a start
+		DijkstraUndirectedSP path = new DijkstraUndirectedSP(graph, s);
+		return path;
+	}
+	
+	
 }
