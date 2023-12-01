@@ -31,7 +31,6 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
-import java.awt.Component;
 
 /**
  * Creates and initializes GUI Components for Disney Shortcuts. 
@@ -81,7 +80,7 @@ public class GuiApp extends JFrame {
 
 		setBackgroundImage();
 
-		createDirectionsTextBox();
+		createInstructionsTextArea();
 
 		createDisclaimerTextField();
 
@@ -106,45 +105,98 @@ public class GuiApp extends JFrame {
 	    mainContent.setLayout(gl_mainContent);
 
 		// ============== CREATE EVENTS ================
+	    
+	    // When Submit is clicked
 		submitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				// TODO button action
+				directionsTextArea.setText("Directions Appear Here!");
 			}
 		});
 		
-		// Listens to mouse clicks
+		// Listens to mouse clicks (for troubleshooting)
 		addMouseListener(new MouseAdapter() {
 			int x1, x2, y1, y2;
-			
+//			int count = 0;
 			@Override
 			public void mousePressed(MouseEvent e) {
+//				Point p = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), mainContent);
+//				x1 = p.x;
+//				y1 = p.y;
+//				count++;
+//				System.out.println(count + "-- X: " + x1 + " Y: " + y1);
 				if (x1 == 0 && y1 == 0) {
-					Point p = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), mainContent);
-					x1 = p.x;
-					y1 = p.y;
-					System.out.println("X: " + x1 + " Y: " + y1);
+					Point p2 = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), mainContent);
+					x1 = p2.x;
+					y1 = p2.y;
+					System.out.println("1st -- X: " + x1 + " Y: " + y1);
 				} else {
-					Point p = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), mainContent);
-					x2 = p.x;
-					y2 = p.y;
-					Graphics g = mainContent.getGraphics();
-					Graphics2D g2d = (Graphics2D) g;
-					g2d.setStroke(new BasicStroke(3));
-					g2d.setColor(Color.RED);
-					g2d.drawLine(x1, y1, x2, y2);
-					x1 = x2 = y1 = y2 = 0;
+					Point p2 = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), mainContent);
+					x2 = p2.x;
+					y2 = p2.y;
+					if (x1 > x2) {
+						int length = x1 - x2;
+						if (y1 > y2) {
+							int width = y1 - y2;
+							double lineDistance = Math.hypot(length, width);
+							Graphics g = mainContent.getGraphics();
+							Graphics2D g2d = (Graphics2D) g;
+							g2d.setStroke(new BasicStroke(3));
+							g2d.setColor(Color.RED);
+							g2d.drawLine(x1, y1, x2, y2);
+							System.out.println("2nd -- X: " + x2 + " Y: " + y2 + " Distance: " + lineDistance);
+							x1 = x2 = y1 = y2 = 0;
+						}
+						else {
+							int width = y2 - y1;
+							double lineDistance = Math.hypot(length, width);
+							Graphics g = mainContent.getGraphics();
+							Graphics2D g2d = (Graphics2D) g;
+							g2d.setStroke(new BasicStroke(3));
+							g2d.setColor(Color.RED);
+							g2d.drawLine(x1, y1, x2, y2);
+							System.out.println("2nd -- X: " + x2 + " Y: " + y2 + " Distance: " + lineDistance);
+							x1 = x2 = y1 = y2 = 0;
+						}
+					}
+					else {
+						int length = x2 - x1;
+						if (y1 > y2) {
+							int width = y1 - y2;
+							double lineDistance = Math.hypot(length, width);
+							Graphics g = mainContent.getGraphics();
+							Graphics2D g2d = (Graphics2D) g;
+							g2d.setStroke(new BasicStroke(3));
+							g2d.setColor(Color.RED);
+							g2d.drawLine(x1, y1, x2, y2);
+							System.out.println("2nd -- X: " + x2 + " Y: " + y2 + " Distance: " + lineDistance);
+							x1 = x2 = y1 = y2 = 0;
+						}
+						else {
+							int width = y2 - y1;
+							double lineDistance = Math.hypot(length, width);
+							Graphics g = mainContent.getGraphics();
+							Graphics2D g2d = (Graphics2D) g;
+							g2d.setStroke(new BasicStroke(3));
+							g2d.setColor(Color.RED);
+							g2d.drawLine(x1, y1, x2, y2);
+							System.out.println("2nd -- X: " + x2 + " Y: " + y2 + " Distance: " + lineDistance);
+							x1 = x2 = y1 = y2 = 0;
+						}
+					}
 				}
 			}
 		});
 	}
 
+	// ============ GUI COMPONENT METHODS ===========
+	
 	/**
 	 * Creates the instructions banner.
 	 */
 	private void createInstructionsTextField() {
 		txtInstructions = new JTextField();
 		txtInstructions.setEditable(false);
-		txtInstructions.setFont(new Font("Copperplate Gothic Light", Font.PLAIN, 14));
+		txtInstructions.setFont(new Font("Copperplate Gothic Light", Font.BOLD, 14));
 		txtInstructions.setText("Instructions");
 		txtInstructions.setHorizontalAlignment(SwingConstants.CENTER);
 		txtInstructions.setColumns(10);
@@ -247,30 +299,6 @@ public class GuiApp extends JFrame {
 	}
 
 	/**
-	 * Reads in all rides form csv
-	 * 
-	 * @param fileName
-	 * @return Ride[] rides
-	 */
-	private static Ride[] getRides(String fileName) {
-		List<Ride> rideList = new ArrayList<>();
-
-		try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
-			reader.readLine();
-			String line;
-			while ((line = reader.readLine()) != null) {
-				String[] tokens = line.split(",");
-				rideList.add(new Ride(tokens[1], 0, 0, tokens[2], Integer.parseInt(tokens[0])));
-			}
-		} catch (IOException e) {
-			System.out.println("A problem occured reading in the songs.");
-			e.printStackTrace();
-		}
-
-		return rideList.toArray(new Ride[rideList.size()]);
-	}
-
-	/**
 	 * Creates the destination text box.
 	 */
 	private void createDestinationTextBox() {
@@ -278,7 +306,7 @@ public class GuiApp extends JFrame {
 		txtDestination.setEditable(false);
 		txtDestination.setText("Destination");
 		txtDestination.setHorizontalAlignment(SwingConstants.CENTER);
-		txtDestination.setFont(new Font("Copperplate Gothic Light", Font.PLAIN, 13));
+		txtDestination.setFont(new Font("Copperplate Gothic Light", Font.BOLD, 13));
 		txtDestination.setColumns(10);
 	}
 
@@ -327,7 +355,7 @@ public class GuiApp extends JFrame {
 	 * 
 	 * @return the text box for directions to go in.
 	 */
-	private JTextArea createDirectionsTextBox() {
+	private JTextArea createInstructionsTextArea() {
 		directionsTextArea = new JTextArea();
 		directionsTextArea.setOpaque(false);
 		directionsTextArea.setEditable(false);
@@ -367,5 +395,29 @@ public class GuiApp extends JFrame {
 		mainContent.setOpaque(false);
 		mainContent.setBackground(Color.WHITE);
 		mainContent.setBorder(new EmptyBorder(5, 5, 5, 5));
+	}
+	
+	// ============ UTILITY METHODS ==============
+	
+	/**
+	 * Reads in all rides form csv
+	 * 
+	 * @param fileName
+	 * @return Ride[] rides
+	 */
+	private static Ride[] getRides(String fileName) {
+		List<Ride> rideList = new ArrayList<>();
+		try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+			reader.readLine();
+			String line;
+			while ((line = reader.readLine()) != null) {
+				String[] tokens = line.split(",");
+				rideList.add(new Ride(tokens[1], 0, 0, tokens[2], Integer.parseInt(tokens[0])));
+			}
+		} catch (IOException e) {
+			System.out.println("A problem occured reading in the songs.");
+			e.printStackTrace();
+		}
+		return rideList.toArray(new Ride[rideList.size()]);
 	}
 }
