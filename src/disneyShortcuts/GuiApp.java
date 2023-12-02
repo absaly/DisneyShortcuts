@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.GroupLayout;
@@ -34,9 +35,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 import edu.princeton.cs.algs4.DijkstraUndirectedSP;
+import edu.princeton.cs.algs4.Edge;
 import edu.princeton.cs.algs4.EdgeWeightedGraph;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.RedBlackBST;
+import edu.princeton.cs.algs4.StdOut;
 
 /**
  * Creates and initializes GUI Components for Disney Shortcuts. 
@@ -59,7 +62,6 @@ public class GuiApp extends JFrame {
 	private JLabel disneyBackgroundImage;
 	private JTextArea welcomeMessage;
 	private JTextField txtInstructions;
-	
 
 	// TEST DRIVER
 	public static void main(String[] args) {
@@ -123,34 +125,42 @@ public class GuiApp extends JFrame {
 		submitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-				// TODO destinationComboBox.getSelectedItem();
-				// TODO startComboBox.getSelectedItem();
-				Ride[] rides = getRides("src/disneyShortcuts/Resources/disneyRides.csv");
-				RedBlackBST<Integer, Ride> st = new RedBlackBST<>();
-				fillSymbolTable(st, rides);
+				// creating graphics variables
+				Graphics g = mainContent.getGraphics();
+				Graphics2D g2d = (Graphics2D) g;
 				
-				String s = startComboBox.getSelectedItem().toString();
-				String d = destinationComboBox.getSelectedItem().toString();
+				// clear drawings TODO
 				
-				int start = Integer.parseInt(s.replaceAll("[^0-9]", ""));
-				int destination = Integer.parseInt(d.replaceAll("[^0-9]", ""));
+				// getting the shortest path from the user's selections
+				int source = startComboBox.getSelectedIndex() + 1;
+				DijkstraUndirectedSP graphSP = createGraph(source);
+				Iterable<Edge> paths = graphSP.pathTo(destinationComboBox.getSelectedIndex() + 1);
 				
-				Integer[] path = GraphProcessor.getPath(start, destination);
-				
-				for (int i = path[0]; i < path.length; i++) {
-					Ride r1 = st.get(i);
-					Ride r2 = st.get((i+1));
-					Graphics g = mainContent.getGraphics();
-					Graphics2D g2d = (Graphics2D) g;
+				// drawing the shortest path
+				// formatting directions to display to user
+				String[] pathArr = new String[15]; // TODO store these differently
+				int count = 0;
+				for (Edge p : paths) {
+					int v1 = p.either();
+					int v2 = p.other(v1);
+					String path = (st.get(v1).getRideID() + "-" + st.get(v1).getName() + " --> " 
+							+ st.get(v2).getRideID() + "-" + st.get(v2).getName());
+					StdOut.println(path);
+					
 					g2d.setStroke(new BasicStroke(3));
 					g2d.setColor(Color.RED);
-					System.out.println("Drawing line from (" + r1.getX() + ", " + r1.getY() + ") to (" + r2.getX() + ", " + r2.getY() + ")");
-					g2d.drawLine(r1.getX(), r1.getY(), r2.getX(), r2.getY());
+					g2d.drawLine(st.get(v1).getX(), st.get(v1).getY(), st.get(v2).getX(), st.get(v2).getY());
+					
+					System.out.println("Coordinates --- " + st.get(v1).getX() + " " + st.get(v1).getY() + " " + st.get(v2).getX() + " " + st.get(v2).getY());
+					
+					pathArr[count] = path;
+					count++;
 				}
+				StdOut.println("---ARRAY---");
+				StdOut.println(Arrays.toString(pathArr));
 				
-				
-				// update directions
-				directionsTextArea.setText("Directions Appear Here!");
+				// update directions box TODO formatting
+				directionsTextArea.setText("Directions: \n" + Arrays.toString(pathArr));
 			}
 		});
 		
@@ -271,28 +281,28 @@ public class GuiApp extends JFrame {
 								.addComponent(disneyBackgroundImage)
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addGroup(gl_mainContent.createParallelGroup(Alignment.LEADING)
-									.addComponent(submitButton, GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
-									.addComponent(destinationComboBox, 0, 262, Short.MAX_VALUE)
-									.addComponent(txtStart, GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
 									.addComponent(directionsTextArea, GroupLayout.PREFERRED_SIZE, 262, GroupLayout.PREFERRED_SIZE)
+									.addComponent(txtStart, GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+									.addComponent(startComboBox, 0, 262, Short.MAX_VALUE)
+									.addComponent(txtDestination, GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+									.addComponent(destinationComboBox, 0, 262, Short.MAX_VALUE)
+									.addComponent(submitButton, GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
 									.addComponent(welcomeMessage, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 262, GroupLayout.PREFERRED_SIZE)
-									.addComponent(txtInstructions, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
-									.addComponent(startComboBox, Alignment.TRAILING, 0, 262, Short.MAX_VALUE)
-									.addComponent(txtDestination, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)))
+									.addComponent(txtInstructions, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)))
 							.addComponent(disclaimerTextField, GroupLayout.DEFAULT_SIZE, 1166, Short.MAX_VALUE))
 						.addContainerGap())
 			);
 			gl_mainContent.setVerticalGroup(
 				gl_mainContent.createParallelGroup(Alignment.LEADING)
 					.addGroup(gl_mainContent.createSequentialGroup()
-						.addGroup(gl_mainContent.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_mainContent.createParallelGroup(Alignment.LEADING, false)
 							.addComponent(disneyBackgroundImage, GroupLayout.PREFERRED_SIZE, 580, GroupLayout.PREFERRED_SIZE)
 							.addGroup(gl_mainContent.createSequentialGroup()
 								.addComponent(welcomeMessage, GroupLayout.PREFERRED_SIZE, 71, GroupLayout.PREFERRED_SIZE)
 								.addGap(1)
 								.addComponent(txtInstructions, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(directionsTextArea, GroupLayout.PREFERRED_SIZE, 141, GroupLayout.PREFERRED_SIZE)
+								.addComponent(directionsTextArea)
 								.addGap(18)
 								.addComponent(txtStart, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 								.addPreferredGap(ComponentPlacement.RELATED)
@@ -399,7 +409,7 @@ public class GuiApp extends JFrame {
 		directionsTextArea.setEditable(false);
 		directionsTextArea.setWrapStyleWord(true);
 		directionsTextArea.setLineWrap(true);
-		directionsTextArea.setFont(new Font("Copperplate Gothic Light", Font.PLAIN, 14));
+		directionsTextArea.setFont(new Font("Copperplate Gothic Light", Font.PLAIN, 11));
 		directionsTextArea.setText(
 				"Please select the ride you're currently closest to and the ride you would like to go to "
 				+ "and click submit.");
@@ -450,7 +460,12 @@ public class GuiApp extends JFrame {
 			String line;
 			while ((line = reader.readLine()) != null) {
 				String[] tokens = line.split(",");
-				rideList.add(new Ride(Integer.parseInt(tokens[0]), tokens[1], tokens[2], Integer.parseInt(tokens[3]), Integer.parseInt(tokens[4])));
+				if (tokens[2].contains("Main")) { // The "Main Street, USA" theme has a comma in it and ruins the line split by comma.
+					rideList.add(new Ride(tokens[1], Integer.parseInt(tokens[4]), Integer.parseInt(tokens[5]), tokens[2], Integer.parseInt(tokens[0])));
+				}
+				else {
+					rideList.add(new Ride(tokens[1], Integer.parseInt(tokens[3]), Integer.parseInt(tokens[4]), tokens[2], Integer.parseInt(tokens[0])));
+				}
 			}
 		} catch (IOException e) {
 			System.out.println("A problem occured reading in the songs.");
@@ -480,12 +495,11 @@ public class GuiApp extends JFrame {
 	 * 
 	 * @return the shortest path between rides, considering weighted edges
 	 */
-	private static DijkstraUndirectedSP createGraph() {
+	private static DijkstraUndirectedSP createGraph(int source) {
 		String fileName = "src/disneyShortcuts/Resources/disneyGraph.txt";
 		In in = new In(fileName);
 		EdgeWeightedGraph graph = new EdgeWeightedGraph(in);
-		int s = 1; // TODO will need to be changed to coincide with whatever ride the user selects as a start
-		DijkstraUndirectedSP path = new DijkstraUndirectedSP(graph, s);
+		DijkstraUndirectedSP path = new DijkstraUndirectedSP(graph, source);
 		return path;
 	}
 	
