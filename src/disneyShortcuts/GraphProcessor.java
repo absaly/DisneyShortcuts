@@ -1,6 +1,10 @@
 package disneyShortcuts;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.princeton.cs.algs4.DijkstraUndirectedSP;
+import edu.princeton.cs.algs4.Edge;
 import edu.princeton.cs.algs4.EdgeWeightedGraph;
 import edu.princeton.cs.algs4.In;
 
@@ -10,11 +14,22 @@ import edu.princeton.cs.algs4.In;
  * @author Noah Ewell + Abbas Al-Younis
  */
 public class GraphProcessor {
-	String fileName = "src/disneyShortcuts/disneyGraph.txt";
-	In in = new In(fileName);
-	EdgeWeightedGraph graph = new EdgeWeightedGraph(in);
-	int s = 1;
-	DijkstraUndirectedSP path = new DijkstraUndirectedSP(graph, s);
+	private static String fileName = "src/disneyShortcuts/Resources/disneyGraph.txt";
+	private static EdgeWeightedGraph graph = new EdgeWeightedGraph(new In(fileName));
 	
 	// TODO No clue how we're gonna use this class... We'll probably need to think of something else.
+	
+	public static Integer[] getPath(int source, int destination) {
+		DijkstraUndirectedSP path = new DijkstraUndirectedSP(graph, source);
+		List<Integer> list = new ArrayList<>();
+		
+		for (Edge e : path.pathTo(destination)) {
+			int v = e.either();
+			int w = e.other(v);
+			list.add(v);
+			list.add(w);
+		}
+		
+		return list.toArray(new Integer[list.size()]);
+	}
 }

@@ -1,12 +1,12 @@
 RideNumber,RideName,Theme,X-coord,Y-coord
-1,Disneyland Railroad,"Main Street, USA",499,544
-2,Horseless Carriage,"Main Street, USA",486,292
-3,Fire Engine,"Main Street, USA",551,288
-4,Horse-Drawn Streetcars,"Main Street, USA",507,296
-5,Omnibus,"Main Street, USA",568,305
-6,Disney Gallery,"Main Street, USA",604,491
-7,The Disneyland Story,"Main Street, USA",590,491
-8,Main Street Cinema,"Main Street, USA",548,446
+1,Disneyland Railroad,"Main Street USA",499,544
+2,Horseless Carriage,"Main Street USA",486,292
+3,Fire Engine,"Main Street USA",551,288
+4,Horse-Drawn Streetcars,"Main Street USA",507,296
+5,Omnibus,"Main Street USA",568,305
+6,Disney Gallery,"Main Street USA",604,491
+7,The Disneyland Story,"Main Street USA",590,491
+8,Main Street Cinema,"Main Street USA",548,446
 9,Walt Disney's Enchanted Tiki Room,Adventureland,449,370
 10,Jungle Cruise,Adventureland,398,395
 11,Indiana Jones Adventure,Adventureland,299,478

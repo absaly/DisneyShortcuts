@@ -17,6 +17,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
@@ -58,6 +59,7 @@ public class GuiApp extends JFrame {
 	private JLabel disneyBackgroundImage;
 	private JTextArea welcomeMessage;
 	private JTextField txtInstructions;
+	
 
 	// TEST DRIVER
 	public static void main(String[] args) {
@@ -121,11 +123,31 @@ public class GuiApp extends JFrame {
 		submitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-				// TODO destinationComboBox.(something)
-				// TODO startComboBox.(something)
+				// TODO destinationComboBox.getSelectedItem();
+				// TODO startComboBox.getSelectedItem();
+				Ride[] rides = getRides("src/disneyShortcuts/Resources/disneyRides.csv");
+				RedBlackBST<Integer, Ride> st = new RedBlackBST<>();
+				fillSymbolTable(st, rides);
 				
-				// get shortest path
-				DijkstraUndirectedSP path = createGraph();
+				String s = startComboBox.getSelectedItem().toString();
+				String d = destinationComboBox.getSelectedItem().toString();
+				
+				int start = Integer.parseInt(s.replaceAll("[^0-9]", ""));
+				int destination = Integer.parseInt(d.replaceAll("[^0-9]", ""));
+				
+				Integer[] path = GraphProcessor.getPath(start, destination);
+				
+				for (int i = path[0]; i < path.length; i++) {
+					Ride r1 = st.get(i);
+					Ride r2 = st.get((i+1));
+					Graphics g = mainContent.getGraphics();
+					Graphics2D g2d = (Graphics2D) g;
+					g2d.setStroke(new BasicStroke(3));
+					g2d.setColor(Color.RED);
+					System.out.println("Drawing line from (" + r1.getX() + ", " + r1.getY() + ") to (" + r2.getX() + ", " + r2.getY() + ")");
+					g2d.drawLine(r1.getX(), r1.getY(), r2.getX(), r2.getY());
+				}
+				
 				
 				// update directions
 				directionsTextArea.setText("Directions Appear Here!");
@@ -428,7 +450,7 @@ public class GuiApp extends JFrame {
 			String line;
 			while ((line = reader.readLine()) != null) {
 				String[] tokens = line.split(",");
-				rideList.add(new Ride(tokens[1], 0, 0, tokens[2], Integer.parseInt(tokens[0])));
+				rideList.add(new Ride(Integer.parseInt(tokens[0]), tokens[1], tokens[2], Integer.parseInt(tokens[3]), Integer.parseInt(tokens[4])));
 			}
 		} catch (IOException e) {
 			System.out.println("A problem occured reading in the songs.");

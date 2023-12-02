@@ -14,7 +14,7 @@ public class Ride {
 	private int rideID;
 	
 	// constructor initializes fields
-	public Ride(String name, int x, int y, String theme, int rideID) {
+	public Ride(int rideID, String name, String theme, int x, int y) {
 		this.name = name;
 		this.x = x;
 		this.y = y;
