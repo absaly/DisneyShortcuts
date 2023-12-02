@@ -1,18 +1,18 @@
 RideNumber,RideName,Theme,X-coord,Y-coord
-1,Disneyland Railroad,"Main Street USA",499,544
-2,Horseless Carriage,"Main Street USA",486,292
-3,Fire Engine,"Main Street USA",551,288
-4,Horse-Drawn Streetcars,"Main Street USA",507,296
-5,Omnibus,"Main Street USA",568,305
-6,Disney Gallery,"Main Street USA",604,491
-7,The Disneyland Story,"Main Street USA",590,491
-8,Main Street Cinema,"Main Street USA",548,446
+1,Disneyland Railroad #1,"Main Street, USA",499,544
+2,Horseless Carriage,"Main Street, USA",486,292
+3,Fire Engine,"Main Street, USA",551,288
+4,Horse-Drawn Streetcars,"Main Street, USA",507,296
+5,Omnibus,"Main Street, USA",568,305
+6,Disney Gallery,"Main Street, USA",604,491
+7,The Disneyland Story,"Main Street, USA",590,491
+8,Main Street Cinema,"Main Street, USA",548,446
 9,Walt Disney's Enchanted Tiki Room,Adventureland,449,370
 10,Jungle Cruise,Adventureland,398,395
 11,Indiana Jones Adventure,Adventureland,299,478
 12,Tarzan's Treehouse,Adventureland,324,399
 13,Pirates of the Caribbean,New Orleans Square,289,374
-14,Disneyland Railroad,New Orleans Square,148,397
+14,Disneyland Railroad #2,New Orleans Square,148,397
 15,Haunted Mansion,New Orleans Square,149,337
 16,Splash Mountain,Critter Country,122,274
 17,The Many Adventures of Winnie the Pooh,Critter Country,50,240
@@ -46,7 +46,7 @@ RideNumber,RideName,Theme,X-coord,Y-coord
 45,Storybook Land Canal Boats,Fantasyland,620,159
 46,it's a small world,Fantasyland,664,119
 47,Fantasyland Theatre,Fantasyland,537,99
-48,Disneyland Railroad,Mickey's Toontown,569,90
+48,Disneyland Railroad #3,Mickey's Toontown,569,90
 49,Goofy's Playhouse,Mickey's Toontown,556,70
 50,Donald's Boat,Mickey's Toontown,525,64
 51,Gadget's Go Coaster,Mickey's Toontown,440,67
@@ -57,7 +57,7 @@ RideNumber,RideName,Theme,X-coord,Y-coord
 56,Finding Nemo Submarine Voyage,Tomorrowland,747,254
 57,Disneyland Monorail,Tomorrowland,802,255
 58,Autopia,Tomorrowland,816,286
-59,Disneyland Railroad,Tomorrowland,880,290
+59,Disneyland Railroad #4,Tomorrowland,880,290
 60,Star Wars Launch Bay,Tomorrowland,774,316
 61,Space Mountain,Tomorrowland,778,431
 62,Tomorrowland Theater,Tomorrowland,759,405

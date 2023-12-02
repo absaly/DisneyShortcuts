@@ -1,8 +1,5 @@
 package disneyShortcuts;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import edu.princeton.cs.algs4.DijkstraUndirectedSP;
 import edu.princeton.cs.algs4.Edge;
 import edu.princeton.cs.algs4.EdgeWeightedGraph;
@@ -14,22 +11,32 @@ import edu.princeton.cs.algs4.In;
  * @author Noah Ewell + Abbas Al-Younis
  */
 public class GraphProcessor {
-	private static String fileName = "src/disneyShortcuts/Resources/disneyGraph.txt";
-	private static EdgeWeightedGraph graph = new EdgeWeightedGraph(new In(fileName));
+	// declare fields
+	private String fileName = "src/disneyShortcuts/Resources/disneyGraph.txt";
+	private In in = new In(fileName);
+	private EdgeWeightedGraph graph = new EdgeWeightedGraph(in);
+	private DijkstraUndirectedSP paths;
+	private int destination;
 	
-	// TODO No clue how we're gonna use this class... We'll probably need to think of something else.
-	
-	public static Integer[] getPath(int source, int destination) {
-		DijkstraUndirectedSP path = new DijkstraUndirectedSP(graph, source);
-		List<Integer> list = new ArrayList<>();
-		
-		for (Edge e : path.pathTo(destination)) {
-			int v = e.either();
-			int w = e.other(v);
-			list.add(v);
-			list.add(w);
-		}
-		
-		return list.toArray(new Integer[list.size()]);
+	/**
+	 * Constructor initializes the fields, and creates a new DijkstraUndirectedSP based on 
+	 * <code>graph</code> and <code>source</code>.
+	 * 
+	 * @param source		the starting vertex
+	 * @param destination	the final vertex
+	 */
+	public GraphProcessor(int source, int destination) {
+		this.destination = destination;
+		paths = new DijkstraUndirectedSP(graph, source);
 	}
+	
+	/**
+	 * Returns the shortest path between a source vertex and vertex v, based on DikjkstraUndirectedSP.
+	 * 
+	 * @return an iterable of edges in the graph
+	 */
+	public Iterable<Edge> pathTo() {
+		return paths.pathTo(destination);
+	}
+	
 }
