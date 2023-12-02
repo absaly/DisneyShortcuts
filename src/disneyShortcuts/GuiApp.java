@@ -6,19 +6,19 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
@@ -30,14 +30,16 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import javax.swing.Timer;
 
 import edu.princeton.cs.algs4.Edge;
 import edu.princeton.cs.algs4.RedBlackBST;
 import edu.princeton.cs.algs4.StdAudio;
+import edu.princeton.cs.algs4.StdDraw;
 
 /**
  * Creates and initializes GUI Components for Disney Shortcuts. 
@@ -63,22 +65,26 @@ public class GuiApp extends JFrame {
 	private JButton clearButton;
 	private JButton aboutButton;
 	
-	// TROUBLESHOOTING CURVED LINES (TODO erase later)
-	private double curvedLineDistance = 0;
-	boolean firstClick = true;
+	String[] knownBugs = new String[] {
+			"Long paths may cause the buttons to disappear.",
+			"Drawings may randomly clear themselves.",
+	};
 	
-	// TEST DRIVER
+	String[] controls = new String[] {
+			"C - Clears contents",
+			"V - Changes color",
+			"Submit - Draws shortest path between locations",
+			"Clear - Clears contents",
+			"About - Loads project information"
+	};
+	
+	// Starts Application
 	public static void main(String[] args) throws FileNotFoundException {
 		
 		// Create Symbol Table
 		Ride[] rides = getRides("src/disneyShortcuts/Resources/disneyRides.csv");
 		RedBlackBST<Integer, Ride> st = new RedBlackBST<>();
 		fillSymbolTable(st, rides);
-		
-		// TROUBLESHOOTING CURVED LINES (TODO erase later)
-//		PrintStream console = System.out;
-//		PrintStream textfile = new PrintStream(new File("src/disneyShortcuts/Resources/disneyCurvedEdgesGraph.txt"));
-//		System.setOut(textfile);
 		
 		// Load GUI
 		EventQueue.invokeLater(new Runnable() {
@@ -92,15 +98,15 @@ public class GuiApp extends JFrame {
 			}
 		});
 		
-		// TROUBLESHOOTING CURVED LINES (TODO erase later)
-		//System.setOut(console);
 	}
 
 	/**
-	 * Creates the frame, initializes components, and creates events.
+	 * Creates components, organizes components, and creates events.
 	 */
 	public GuiApp(RedBlackBST<Integer, Ride> st) {
-		// =========== CREATE FRAME & INITIALIZE COMPONENTS ==========
+		
+		// =========== CREATE COMPONENTS ==========
+		
 		setUp();
 
 		setContentPane(mainContent);
@@ -129,19 +135,21 @@ public class GuiApp extends JFrame {
 		
 		createAboutButton();
 		
+		// ========== ORGANIZE COMPONENTS =========
+		
 		GroupLayout gl_mainContent = new GroupLayout(mainContent);
 		
 		configureGroupLayout(gl_mainContent);
 	    
 	    mainContent.setLayout(gl_mainContent);
+	    mainContent.setFocusable(true);
+	    mainContent.requestFocusInWindow();
 
 		// ============== CREATE EVENTS ================
+	    
+	    // When 'Submit' is clicked.
 		submitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
-				// TROUBLESHOOTING CURVED LINES (TODO erase later)
-				curvedLineDistance = 0;
-				firstClick = true;
 				
 				// Creating graphics variables
 				Graphics g = mainContent.getGraphics();
@@ -166,247 +174,91 @@ public class GuiApp extends JFrame {
 							+ st.get(v2).getRideID() + " - " + st.get(v2).getName());
 					pathArr.add(path);
 					g2d.drawLine(st.get(v1).getX(), st.get(v1).getY(), st.get(v2).getX(), st.get(v2).getY());
+					// TODO introduce a timer to delay each next line being drawn
 				}
 				
-				// DISPLAY RIDES IN ORDER (lower numbers should not always be first) TODO
-				
 				// Modifies text in txtInstructions and directionsTextArea
-				StringBuilder pathInfo = new StringBuilder("Directions: \n\n");		
+				StringBuilder pathInfo = new StringBuilder("Directions: \n");		
 				for (String s : pathArr) {
-					pathInfo.append(s).append("\n\n");
+					pathInfo.append(s).append("\n");
 				}
 				txtInstructions.setText("Directions");
 				directionsTextArea.setText(pathInfo.toString());
 				
-				// Plays audio of kids cheering
-				StdAudio.play("src/disneyShortcuts/Resources/kidsCheering.wav");
+				// Plays audio to let the user know the path has been created.
+				StdAudio.play("src/disneyShortcuts/Resources/magicSound.wav");
 				
 			}
 		});
-
 		
-		// Listens to mouse clicks (for troubleshooting)
-		addMouseListener(new MouseAdapter() {
-			int x1, x2, y1, y2, v1, v2;
-			int countVertices = 100;
-			@Override
-			public void mousePressed(MouseEvent e) {
-				
-				/*
-				 * TROUBLESHOOTING CURVED LINES
-				 * 
-				 * PHASE 1
-				 * Create something to increment vertices.
-				 * Create a boolean to keep track of first mouse clicks.
-				 * Get the location of the first mouse click (x, y) and create a first vertice from it.
-				 * Get the location of the second mouse click (x, y) and create a second vertice from it.
-				 * PHASE 2
-				 * Take the positive difference (hypotenuse) of those mouse clicks and create a distance from it.
-				 * Add up the distances to get a weight. 
-				 * Create a button to reset the weight back to zero so correct distances are calculated.
-				 * Save the first and second vertices to a new graph file, alongwith the weight.
-				 */
-				
-				Graphics g = mainContent.getGraphics();
-				Graphics2D g2d = (Graphics2D) g;
-				g2d.setStroke(new BasicStroke(3));
-				g2d.setColor(Color.WHITE);
-				
-				// PHASE 1
-				if (firstClick) {
-					int v1 = countVertices;
-					Point p = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), mainContent);
-					x1 = p.x;
-					y1 = p.y;
-					//g2d.drawLine(x1, y1, x1-1, y1-1);
-					g2d.drawString(v1 + "", x1, y1);
-					System.out.print(v1 + " ");
-					firstClick = false;
-				}
-				else {
-					int v2 = countVertices;
-					Point p = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), mainContent);
-					x2 = p.x;
-					y2 = p.y;
-					//g2d.drawLine(x2-1, y2-1, x2, y2);
-					g2d.drawString(v2 + "", x2, y2);
-					System.out.print(v2 + " ");
-					
-					// PHASE 2
-					if (x1 > x2) {
-						int length = x1 - x2;
-						if (y1 > y2) {
-							int width = y1 - y2;
-							double lineDistance = Math.hypot(length, width);
-							curvedLineDistance += lineDistance; // add it to calculate the weight
-							System.out.println(curvedLineDistance + " ");
-							x1 = x2 = y1 = y2 = 0;
-						}
-						else {
-							int width = y2 - y1;
-							double lineDistance = Math.hypot(length, width);
-							curvedLineDistance += lineDistance; // add it to calculate the weight
-							//System.out.println("2nd -- X: " + x2 + " Y: " + y2 + " Distance: " + lineDistance + " Weight: " + curvedLineDistance);
-							x1 = x2 = y1 = y2 = 0;
-						}
-					}
-					else {
-						int length = x2 - x1;
-						if (y1 > y2) {
-							int width = y1 - y2;
-							double lineDistance = Math.hypot(length, width);
-							curvedLineDistance += lineDistance; // add it to calculate the weight
-							//System.out.println("2nd -- X: " + x2 + " Y: " + y2 + " Distance: " + lineDistance + " Weight: " + curvedLineDistance);
-							x1 = x2 = y1 = y2 = 0;
-						}
-						else {
-							int width = y2 - y1;
-							double lineDistance = Math.hypot(length, width);
-							curvedLineDistance += lineDistance; // add it to calculate the weight
-							//System.out.println("2nd -- X: " + x2 + " Y: " + y2 + " Distance: " + lineDistance + " Weight: " + curvedLineDistance);
-							x1 = x2 = y1 = y2 = 0;
-						}
-					}	
-				}
-				countVertices++;
-				
-				// TROUBLESHOOTING STRAIGHT LINES (TODO erase later)
-//				if (x1 == 0 && y1 == 0) {
-//					Point p2 = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), mainContent);
-//					x1 = p2.x;
-//					y1 = p2.y;
-//					System.out.println("1st -- X: " + x1 + " Y: " + y1);
-//				} else {
-//					Point p2 = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), mainContent);
-//					x2 = p2.x;
-//					y2 = p2.y;
-//					if (x1 > x2) {
-//						int length = x1 - x2;
-//						if (y1 > y2) {
-//							int width = y1 - y2;
-//							double lineDistance = Math.hypot(length, width);
-//							Graphics g = mainContent.getGraphics();
-//							Graphics2D g2d = (Graphics2D) g;
-//							g2d.setStroke(new BasicStroke(3));
-//							g2d.setColor(Color.RED);
-//							g2d.drawLine(x1, y1, x2, y2);
-//							System.out.println("2nd -- X: " + x2 + " Y: " + y2 + " Distance: " + lineDistance);
-//							x1 = x2 = y1 = y2 = 0;
-//						}
-//						else {
-//							int width = y2 - y1;
-//							double lineDistance = Math.hypot(length, width);
-//							Graphics g = mainContent.getGraphics();
-//							Graphics2D g2d = (Graphics2D) g;
-//							g2d.setStroke(new BasicStroke(3));
-//							g2d.setColor(Color.RED);
-//							g2d.drawLine(x1, y1, x2, y2);
-//							System.out.println("2nd -- X: " + x2 + " Y: " + y2 + " Distance: " + lineDistance);
-//							x1 = x2 = y1 = y2 = 0;
-//						}
-//					}
-//					else {
-//						int length = x2 - x1;
-//						if (y1 > y2) {
-//							int width = y1 - y2;
-//							double lineDistance = Math.hypot(length, width);
-//							Graphics g = mainContent.getGraphics();
-//							Graphics2D g2d = (Graphics2D) g;
-//							g2d.setStroke(new BasicStroke(3));
-//							g2d.setColor(Color.RED);
-//							g2d.drawLine(x1, y1, x2, y2);
-//							System.out.println("2nd -- X: " + x2 + " Y: " + y2 + " Distance: " + lineDistance);
-//							x1 = x2 = y1 = y2 = 0;
-//						}
-//						else {
-//							int width = y2 - y1;
-//							double lineDistance = Math.hypot(length, width);
-//							Graphics g = mainContent.getGraphics();
-//							Graphics2D g2d = (Graphics2D) g;
-//							g2d.setStroke(new BasicStroke(3));
-//							g2d.setColor(Color.RED);
-//							g2d.drawLine(x1, y1, x2, y2);
-//							System.out.println("2nd -- X: " + x2 + " Y: " + y2 + " Distance: " + lineDistance);
-//							x1 = x2 = y1 = y2 = 0;
-//						}
-//					}
-//				}
-			}
-		});
-	} // ============ GUI COMPONENT METHODS ===========
-
-	/**
-	 * Creates an about button to display a popup.
-	 * 
-	 * @return about button
-	 */
-	private JButton createAboutButton() {
-		aboutButton = new JButton("About");
-		aboutButton.setOpaque(true);
-		aboutButton.setForeground(Color.WHITE);
-		aboutButton.setFont(new Font("Copperplate Gothic Light", Font.BOLD, 13));
-		aboutButton.setBorder(null);
-		aboutButton.setBackground(Color.BLACK);
-		
-		aboutButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(null, "This is where we put the project explanation", "About Disney Shortcuts", JOptionPane.INFORMATION_MESSAGE); // TODO
-			}
-		});
-		
-		return aboutButton;
-	}
-
-	/**
-	 * Creates a clear button.
-	 * 
-	 * @return clear button
-	 */
-	private JButton createClearButton() {
-		clearButton = new JButton("Clear");
-		clearButton.setOpaque(true);
-		clearButton.setForeground(Color.WHITE);
-		clearButton.setFont(new Font("Copperplate Gothic Light", Font.BOLD, 13));
-		clearButton.setBorder(null);
-		clearButton.setBackground(Color.RED);
-		
+		// When 'Clear' is clicked.
 		clearButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				mainContent.repaint();
-				txtInstructions.setText("Instructions");
-				directionsTextArea.setText("Please select the ride you're currently closest to and the ride "
-						+ "you would like to go to and click submit.");
+				clearContents();
 			}
 		});
 		
-		return clearButton;
-	}
+		// When 'About' is clicked.
+		aboutButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				String[] readMe = getReadMe();
+				StringBuilder readMeDesc = new StringBuilder("DESCRIPTION: \n");
+				for (String s : readMe) {
+					readMeDesc.append(s).append("\n");
+				}
+				
+				StringBuilder bugsInfo = new StringBuilder("KNOWN BUGS: \n");
+				for (String s : knownBugs) {
+					bugsInfo.append(s).append("\n");
+				}
+				
+				StringBuilder controlsInfo = new StringBuilder("CONTROLS: \n");
+				for (String s : controls) {
+					controlsInfo.append(s).append("\n");
+				}
+				
+				JOptionPane.showMessageDialog(null, readMeDesc + "\n" + bugsInfo + "\n" + controlsInfo, 
+						"About Disney Shortcuts", JOptionPane.INFORMATION_MESSAGE);
+			}
+		});
+		
+		// TODO clear when C is pressed
+		Action clearDrawings = new AbstractAction() {
+			private static final long serialVersionUID = 1L;
+			public void actionPerformed(ActionEvent e) {
+				clearContents();
+			}
+		};
+		mainContent.getInputMap().put(KeyStroke.getKeyStroke("C"), "clearDrawings");
+		
+		// Unsure if this will work to change the color
+		// TODO change color when V is pressed
+		Action changeColors = new AbstractAction() {
+			private static final long serialVersionUID = 1L;
+			public void actionPerformed(ActionEvent e) {
+				Random rand = new Random();
+				Color[] colors = {
+									StdDraw.BLUE,
+									StdDraw.RED,
+									StdDraw.YELLOW,
+									StdDraw.GREEN,
+									StdDraw.ORANGE,
+									StdDraw.PINK,
+									StdDraw.MAGENTA,
+									StdDraw.CYAN,
+									StdDraw.BOOK_RED,
+									StdDraw.BOOK_BLUE
+								  };
+				Color randomColor = colors[rand.nextInt(10-0)+0];
+				g2d.setColor(randomColor);
+			}
+		};
+		mainContent.getInputMap().put(KeyStroke.getKeyStroke("V"), "changeColors");
+		
+	} 
 	
-	/**
-	 * Creates the instructions banner.
-	 */
-	private void createInstructionsTextField() {
-		txtInstructions = new JTextField();
-		txtInstructions.setEditable(false);
-		txtInstructions.setFont(new Font("Copperplate Gothic Light", Font.BOLD, 14));
-		txtInstructions.setText("Instructions");
-		txtInstructions.setHorizontalAlignment(SwingConstants.CENTER);
-		txtInstructions.setColumns(10);
-	}
-
-	/**
-	 * Creates the welcome message.
-	 */
-	private void createWelcomeTextArea() {
-		welcomeMessage = new JTextArea();
-		welcomeMessage.setOpaque(false);
-		welcomeMessage.setWrapStyleWord(true);
-		welcomeMessage.setEditable(false);
-		welcomeMessage.setForeground(Color.BLUE);
-		welcomeMessage.setText("Welcome to... Disney Shortcuts!");
-		welcomeMessage.setLineWrap(true);
-		welcomeMessage.setFont(new Font("Copperplate Gothic Light", Font.BOLD | Font.ITALIC, 24));
-	}
+	// ============ GUI COMPONENT METHODS ===========
 
 	/**
 	 * Modifies positioning of various components in the group layout.
@@ -467,7 +319,68 @@ public class GuiApp extends JFrame {
 						.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
 			);
 	}
+	
+	/**
+	 * Creates an about button to display a popup.
+	 * 
+	 * @return about button
+	 */
+	private JButton createAboutButton() {
+		aboutButton = new JButton("About");
+		aboutButton.setOpaque(true);
+		aboutButton.setForeground(Color.WHITE);
+		aboutButton.setFont(new Font("Copperplate Gothic Light", Font.BOLD, 13));
+		aboutButton.setBorder(null);
+		aboutButton.setBackground(Color.BLACK);
+		return aboutButton;
+	}
 
+	
+	/**
+	 * Creates a clear button.
+	 * 
+	 * @return clear button
+	 */
+	private JButton createClearButton() {
+		clearButton = new JButton("Clear");
+		clearButton.setOpaque(true);
+		clearButton.setForeground(Color.WHITE);
+		clearButton.setFont(new Font("Copperplate Gothic Light", Font.BOLD, 13));
+		clearButton.setBorder(null);
+		clearButton.setBackground(Color.RED);
+		return clearButton;
+	}
+	
+	
+	/**
+	 * Creates the instructions banner.
+	 */
+	private void createInstructionsTextField() {
+		txtInstructions = new JTextField();
+		txtInstructions.setEditable(false);
+		txtInstructions.setFont(new Font("Copperplate Gothic Light", Font.BOLD, 14));
+		txtInstructions.setText("Instructions");
+		txtInstructions.setHorizontalAlignment(SwingConstants.CENTER);
+		txtInstructions.setColumns(10);
+	}
+
+	
+	/**
+	 * Creates the welcome message.
+	 */
+	private void createWelcomeTextArea() {
+		welcomeMessage = new JTextArea();
+		welcomeMessage.setOpaque(false);
+		welcomeMessage.setWrapStyleWord(true);
+		welcomeMessage.setEditable(false);
+		welcomeMessage.setForeground(Color.BLUE);
+		welcomeMessage.setText("Welcome to... Disney Shortcuts!");
+		welcomeMessage.setLineWrap(true);
+		welcomeMessage.setFont(new Font("Copperplate Gothic Light", Font.BOLD | Font.ITALIC, 24));
+	}
+
+
+	
 	/**
 	 * Creates the destination drop down menu.
 	 * @param st 
@@ -482,6 +395,7 @@ public class GuiApp extends JFrame {
 		}
 	}
 
+	
 	/**
 	 * Creates the start drop down menu.
 	 */
@@ -495,6 +409,7 @@ public class GuiApp extends JFrame {
 		}
 	}
 
+	
 	/**
 	 * Creates the destination text box.
 	 */
@@ -507,6 +422,7 @@ public class GuiApp extends JFrame {
 		txtDestination.setColumns(10);
 	}
 
+	
 	/**
 	 * Creates the start text box.
 	 */
@@ -519,6 +435,7 @@ public class GuiApp extends JFrame {
 		txtStart.setColumns(10);
 	}
 
+	
 	/**
 	 * Creates the submit button.
 	 */
@@ -531,6 +448,7 @@ public class GuiApp extends JFrame {
 		submitButton.setFont(new Font("Copperplate Gothic Light", Font.BOLD, 13));
 	}
 
+	
 	/**
 	 * Creates the disclaimer text field at the bottom.
 	 */
@@ -548,6 +466,7 @@ public class GuiApp extends JFrame {
 		disclaimerTextField.setColumns(10);
 	}
 
+	
 	/**
 	 * Creates the directions text box.
 	 * 
@@ -565,6 +484,7 @@ public class GuiApp extends JFrame {
 		return directionsTextArea;
 	}
 
+	
 	/**
 	 * Creates a new JLabel and sets the disneyBackgroundImage
 	 * 
@@ -578,8 +498,10 @@ public class GuiApp extends JFrame {
 		return disneyBackgroundImage;
 	}
 
+	
 	/**
-	 * Sets the close operation, boundaries, title, icon, and creates a new JPanel.
+	 * Sets the close operation, boundaries, title, icon, and creates a new JPanel. 
+	 * Plays a sound in the background.
 	 */
 	private void setUp() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -592,6 +514,7 @@ public class GuiApp extends JFrame {
 		mainContent.setOpaque(false);
 		mainContent.setBackground(Color.WHITE);
 		mainContent.setBorder(new EmptyBorder(5, 5, 5, 5));
+		StdAudio.playInBackground("src/disneyShortcuts/Resources/backgroundMusic.wav");
 	}
 	
 	// ============ UTILITY METHODS ==============
@@ -625,6 +548,7 @@ public class GuiApp extends JFrame {
 		return rideList.toArray(new Ride[rideList.size()]);
 	}
 	
+	
 	/**
 	 * Fills the symbol table with Rides. Each ride gets a unique id from the range that
 	 * is chronologically chosen. Each rides ID on the symbol table should match its ID
@@ -639,5 +563,36 @@ public class GuiApp extends JFrame {
 			id++;
 			st.put(id, r);
 		}
+	}
+	
+	/**
+	 * Returns a string with the contents of the readMe broken up by sentences.
+	 */
+	private static String[] getReadMe() {
+		List<String> list = new ArrayList<>();
+		String fileName = "README.md";
+		int count = 0;
+		try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+			reader.readLine();
+			String line;
+			while ((line = reader.readLine()) != null) {
+				String[] tokens = line.split("\n");
+				for (String s : tokens) {
+					list.add(s);
+					count++;
+				}
+			}
+		} catch (IOException e) {
+			System.err.println("Cannot read " + fileName);
+			e.printStackTrace();
+		}
+		return list.toArray(new String[count]);
+	}
+	
+	private void clearContents() {
+		mainContent.repaint();
+		txtInstructions.setText("Instructions");
+		directionsTextArea.setText("Please select the ride you're currently closest to and the ride "
+				+ "you would like to go to and click submit.");
 	}
 }
