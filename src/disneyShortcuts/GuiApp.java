@@ -71,13 +71,13 @@ public class GuiApp extends JFrame {
 	
 	String[] controls = new String[] {
 			"C - Clears contents",
-			"V - Changes color",
+			"V - Changes to a random color",
 			"Submit - Draws shortest path between locations",
 			"Clear - Clears contents",
 			"About - Loads project information"
 	};
 	
-	private Color currentColor = Color.RED;
+	private Color currentColor = Color.BLACK;
 	
 	// Starts Application
 	public static void main(String[] args) throws FileNotFoundException {
@@ -147,6 +147,7 @@ public class GuiApp extends JFrame {
 	    mainContent.requestFocusInWindow();
 
 		// ============== CREATE EVENTS ================
+	    
 	    addSubmitActionListener(st);
 	    
 	    // clear when C is pressed
@@ -577,7 +578,7 @@ public class GuiApp extends JFrame {
 					pathArr.add(path);
 					g2d.drawLine(st.get(v1).getX(), st.get(v1).getY(), st.get(v2).getX(), st.get(v2).getY());
 					// Sleeps every 500ms to add a delay
-					sleep(500);
+					sleep(200);
 				}
 				
 				// Modifies text in txtInstructions and directionsTextArea
@@ -602,6 +603,8 @@ public class GuiApp extends JFrame {
 	private void randColorKeybind() {
 		mainContent.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_V, 0), "changeColors");
 		mainContent.getActionMap().put("changeColors", new AbstractAction() {
+			private static final long serialVersionUID = -274372000134457652L;
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Random rand = new Random();
@@ -614,11 +617,13 @@ public class GuiApp extends JFrame {
 									Color.PINK,
 									Color.MAGENTA,
 									Color.CYAN,
+									Color.BLACK,
 									new Color(150, 35, 31), // StdDraw.BOOK_RED
 									new Color(9, 90, 166) // StdDraw.BOOK_BLUE
 								  };
 				Color randomColor = colors[rand.nextInt(0,10)];
 				currentColor = randomColor;
+				aboutButton.setBackground(currentColor);
 			}
 		});
 	}
@@ -629,7 +634,9 @@ public class GuiApp extends JFrame {
 	private void clearKeybind() {
 		mainContent.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_C, 0), "clearAction");
 	    mainContent.getActionMap().put("clearAction", new AbstractAction() {
-	        @Override
+	        private static final long serialVersionUID = 118746117564857718L;
+
+			@Override
 	        public void actionPerformed(ActionEvent e) {
 	            clearContents();
 	        }
