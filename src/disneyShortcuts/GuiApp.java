@@ -9,6 +9,7 @@ import java.awt.Graphics2D;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -18,12 +19,12 @@ import java.util.List;
 import java.util.Random;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -34,12 +35,10 @@ import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
-import javax.swing.Timer;
 
 import edu.princeton.cs.algs4.Edge;
 import edu.princeton.cs.algs4.RedBlackBST;
 import edu.princeton.cs.algs4.StdAudio;
-import edu.princeton.cs.algs4.StdDraw;
 
 /**
  * Creates and initializes GUI Components for Disney Shortcuts. 
@@ -77,6 +76,8 @@ public class GuiApp extends JFrame {
 			"Clear - Clears contents",
 			"About - Loads project information"
 	};
+	
+	private Color currentColor = Color.RED;
 	
 	// Starts Application
 	public static void main(String[] args) throws FileNotFoundException {
@@ -146,117 +147,14 @@ public class GuiApp extends JFrame {
 	    mainContent.requestFocusInWindow();
 
 		// ============== CREATE EVENTS ================
+	    addSubmitActionListener(st);
 	    
-	    // When 'Submit' is clicked.
-		submitButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				// Creating graphics variables
-				Graphics g = mainContent.getGraphics();
-				Graphics2D g2d = (Graphics2D) g;
-				g2d.setStroke(new BasicStroke(3));
-				g2d.setColor(Color.RED);
-				
-				// Getting the shortest path from the user's selections
-				int source = startComboBox.getSelectedIndex() + 1;
-				int destination = destinationComboBox.getSelectedIndex() + 1;
-				
-				// Creates shortest-paths graph and an iterable of paths
-				GraphProcessor graphProccessor = new GraphProcessor(source, destination);
-				Iterable<Edge> paths = graphProccessor.pathTo();
-				
-				// Drawing an edge of the shortest path for each iteration
-				List<String> pathArr = new ArrayList<>();
-				for (Edge p : paths) {
-					int v1 = p.either();
-					int v2 = p.other(v1);
-					String path = (st.get(v1).getRideID() + " - " + st.get(v1).getName() + " ---> " 
-							+ st.get(v2).getRideID() + " - " + st.get(v2).getName());
-					pathArr.add(path);
-					g2d.drawLine(st.get(v1).getX(), st.get(v1).getY(), st.get(v2).getX(), st.get(v2).getY());
-					// TODO introduce a timer to delay each next line being drawn
-				}
-				
-				// Modifies text in txtInstructions and directionsTextArea
-				StringBuilder pathInfo = new StringBuilder("Directions: \n");		
-				for (String s : pathArr) {
-					pathInfo.append(s).append("\n");
-				}
-				txtInstructions.setText("Directions");
-				directionsTextArea.setText(pathInfo.toString());
-				
-				// Plays audio to let the user know the path has been created.
-				StdAudio.play("src/disneyShortcuts/Resources/magicSound.wav");
-				
-			}
-		});
-		
-		// When 'Clear' is clicked.
-		clearButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				clearContents();
-			}
-		});
-		
-		// When 'About' is clicked.
-		aboutButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				String[] readMe = getReadMe();
-				StringBuilder readMeDesc = new StringBuilder("DESCRIPTION: \n");
-				for (String s : readMe) {
-					readMeDesc.append(s).append("\n");
-				}
-				
-				StringBuilder bugsInfo = new StringBuilder("KNOWN BUGS: \n");
-				for (String s : knownBugs) {
-					bugsInfo.append(s).append("\n");
-				}
-				
-				StringBuilder controlsInfo = new StringBuilder("CONTROLS: \n");
-				for (String s : controls) {
-					controlsInfo.append(s).append("\n");
-				}
-				
-				JOptionPane.showMessageDialog(null, readMeDesc + "\n" + bugsInfo + "\n" + controlsInfo, 
-						"About Disney Shortcuts", JOptionPane.INFORMATION_MESSAGE);
-			}
-		});
-		
-		// TODO clear when C is pressed
-		Action clearDrawings = new AbstractAction() {
-			private static final long serialVersionUID = 1L;
-			public void actionPerformed(ActionEvent e) {
-				clearContents();
-			}
-		};
-		mainContent.getInputMap().put(KeyStroke.getKeyStroke("C"), "clearDrawings");
-		
-		// Unsure if this will work to change the color
-		// TODO change color when V is pressed
-		Action changeColors = new AbstractAction() {
-			private static final long serialVersionUID = 1L;
-			public void actionPerformed(ActionEvent e) {
-				Random rand = new Random();
-				Color[] colors = {
-									StdDraw.BLUE,
-									StdDraw.RED,
-									StdDraw.YELLOW,
-									StdDraw.GREEN,
-									StdDraw.ORANGE,
-									StdDraw.PINK,
-									StdDraw.MAGENTA,
-									StdDraw.CYAN,
-									StdDraw.BOOK_RED,
-									StdDraw.BOOK_BLUE
-								  };
-				Color randomColor = colors[rand.nextInt(10-0)+0];
-				g2d.setColor(randomColor);
-			}
-		};
-		mainContent.getInputMap().put(KeyStroke.getKeyStroke("V"), "changeColors");
-		
-	} 
+	    // clear when C is pressed
+	    clearKeybind();
+	
+		// change color when V is pressed
+		randColorKeybind();
+	}
 	
 	// ============ GUI COMPONENT METHODS ===========
 
@@ -332,6 +230,31 @@ public class GuiApp extends JFrame {
 		aboutButton.setFont(new Font("Copperplate Gothic Light", Font.BOLD, 13));
 		aboutButton.setBorder(null);
 		aboutButton.setBackground(Color.BLACK);
+		
+		aboutButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				String[] readMe = getReadMe();
+				StringBuilder readMeDesc = new StringBuilder("DESCRIPTION: \n");
+				for (String s : readMe) {
+					readMeDesc.append(s).append("\n");
+				}
+				
+				StringBuilder bugsInfo = new StringBuilder("KNOWN BUGS: \n");
+				for (String s : knownBugs) {
+					bugsInfo.append(s).append("\n");
+				}
+				
+				StringBuilder controlsInfo = new StringBuilder("CONTROLS: \n");
+				for (String s : controls) {
+					controlsInfo.append(s).append("\n");
+				}
+				
+				JOptionPane.showMessageDialog(null, readMeDesc + "\n" + bugsInfo + "\n" + controlsInfo, 
+						"About Disney Shortcuts", JOptionPane.INFORMATION_MESSAGE);
+			}
+		});
+		
 		return aboutButton;
 	}
 
@@ -348,6 +271,15 @@ public class GuiApp extends JFrame {
 		clearButton.setFont(new Font("Copperplate Gothic Light", Font.BOLD, 13));
 		clearButton.setBorder(null);
 		clearButton.setBackground(Color.RED);
+		
+		clearButton.setMnemonic(KeyEvent.VK_C);
+		
+		clearButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				clearContents();
+			}
+		});
+		
 		return clearButton;
 	}
 	
@@ -589,10 +521,118 @@ public class GuiApp extends JFrame {
 		return list.toArray(new String[count]);
 	}
 	
+	/**
+	 * Clears paint and repeats instructions.
+	 */
 	private void clearContents() {
 		mainContent.repaint();
 		txtInstructions.setText("Instructions");
 		directionsTextArea.setText("Please select the ride you're currently closest to and the ride "
 				+ "you would like to go to and click submit.");
+	}
+	
+	/**
+	 * Adds set amount of delay to the program.
+	 * 
+	 * @param duration time in milliseconds
+	 */
+	private void sleep(int duration) {
+		try {
+			Thread.sleep(duration);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Adds action listener to the submit button.
+	 * 
+	 * @param st symbol table of rides
+	 */
+	private void addSubmitActionListener(RedBlackBST<Integer, Ride> st) {
+		submitButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				// Creating graphics variables
+				Graphics g = mainContent.getGraphics();
+				Graphics2D g2d = (Graphics2D) g;
+				g2d.setStroke(new BasicStroke(3));
+				g2d.setColor(currentColor);
+				
+				// Getting the shortest path from the user's selections
+				int source = startComboBox.getSelectedIndex() + 1;
+				int destination = destinationComboBox.getSelectedIndex() + 1;
+				
+				// Creates shortest-paths graph and an iterable of paths
+				GraphProcessor graphProccessor = new GraphProcessor(source, destination);
+				Iterable<Edge> paths = graphProccessor.pathTo();
+				
+				// Drawing an edge of the shortest path for each iteration
+				List<String> pathArr = new ArrayList<>();
+				for (Edge p : paths) {
+					int v1 = p.either();
+					int v2 = p.other(v1);
+					String path = (st.get(v1).getRideID() + " - " + st.get(v1).getName() + " ---> " 
+							+ st.get(v2).getRideID() + " - " + st.get(v2).getName());
+					pathArr.add(path);
+					g2d.drawLine(st.get(v1).getX(), st.get(v1).getY(), st.get(v2).getX(), st.get(v2).getY());
+					// Sleeps every 500ms to add a delay
+					sleep(500);
+				}
+				
+				// Modifies text in txtInstructions and directionsTextArea
+				StringBuilder pathInfo = new StringBuilder("Directions: \n");		
+				for (String s : pathArr) {
+					pathInfo.append(s).append("\n");
+				}
+				txtInstructions.setText("Directions");
+				directionsTextArea.setText(pathInfo.toString());
+				
+				// Plays audio to let the user know the path has been created.
+				StdAudio.play("src/disneyShortcuts/Resources/magicSound.wav");
+				
+			}
+
+		});
+	} 
+	
+	/**
+	 * Get random color when V is pressed.
+	 */
+	private void randColorKeybind() {
+		mainContent.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_V, 0), "changeColors");
+		mainContent.getActionMap().put("changeColors", new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Random rand = new Random();
+				Color[] colors = {
+									Color.BLUE,
+									Color.RED,
+									Color.YELLOW,
+									Color.GREEN,
+									Color.ORANGE,
+									Color.PINK,
+									Color.MAGENTA,
+									Color.CYAN,
+									new Color(150, 35, 31), // StdDraw.BOOK_RED
+									new Color(9, 90, 166) // StdDraw.BOOK_BLUE
+								  };
+				Color randomColor = colors[rand.nextInt(0,10)];
+				currentColor = randomColor;
+			}
+		});
+	}
+	
+	/**
+	 * Clears all drawings when C is pressed.
+	 */
+	private void clearKeybind() {
+		mainContent.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_C, 0), "clearAction");
+	    mainContent.getActionMap().put("clearAction", new AbstractAction() {
+	        @Override
+	        public void actionPerformed(ActionEvent e) {
+	            clearContents();
+	        }
+	    });
 	}
 }
